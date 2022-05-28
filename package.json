@@ -1,6 +1,6 @@
 {
     "name": "ts-database",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "description": "这是基于typesciprt的indexedDB的数据库的操作函数",
     "keywords": [
         "typescript",
@@ -21,8 +21,8 @@
     },
     "homepage": "https://github.com/xygengcn/ts-database#readme",
     "scripts": {
-        "dev": "cross-env NODE_ENV=development  && webpack serve",
-        "build": "webpack --config webpack.config.js",
+        "dev": "cross-env NODE_ENV=development   webpack serve",
+        "build": "cross-env NODE_ENV=production   webpack --config webpack.config.js",
         "prepublish": "npm run build"
     },
     "devDependencies": {

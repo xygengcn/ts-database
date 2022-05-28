@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
-        "module": "esnext",
-        "target": "es6",
+        "allowSyntheticDefaultImports": true,
+        "module": "es6",
+        "target": "es5",
         "allowJs": true,
         "declaration": true,
         "outDir": "./dist",

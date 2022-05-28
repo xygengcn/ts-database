@@ -141,7 +141,7 @@ export class DBDatabaseModule {
                     });
                     if (result) {
                         if (options?.attributes?.length) {
-                            const value = options.attributes.reduce((result, attr) => {
+                            const value = options.attributes.reduce((result: T, attr: string) => {
                                 result[attr] = cursor.value[attr];
                                 return result;
                             }, {} as T);
