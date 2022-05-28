@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+*.html
+docs/
+*.config.js
+src/
+yarn.lock
+.prettierrc
+.gitignore
