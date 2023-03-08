@@ -1,6 +1,6 @@
-## 这是基于typesciprt的indexedDB的数据库的操作函数
+## 这是基于 typesciprt 的 indexedDB 的数据库的操作函数
 
-本项目基于typescript封装了indexedDB基本操作函数，并返回Promise操作
+本项目基于 typescript 封装了 indexedDB 基本操作函数，并返回 Promise 操作
 
 ### 实例
 
@@ -32,58 +32,66 @@ const createUser = () => {
 };
 
 createUser();
-
 ```
 
 ### 接口文档
 
-
 #### 1、批量保存，存在更新
 
 ```js
-moduel.bulkCreate()
+moduel.bulkCreate();
 ```
-
 
 #### 2、数据更新
 
 ```js
-moduel.update()
+moduel.update();
 ```
 
 #### 3、批量数据拉取
 
 ```js
-moduel.findAll()
+moduel.findAll();
 ```
 
 #### 4、根据主键拉取
 
 ```js
-moduel.findByPk()
+moduel.findByPk();
 ```
 
 #### 5、 关键词搜索
 
 ```js
-moduel.findAllLike()
+moduel.findAllLike();
 ```
-
 
 #### 6、 删除
 
 ```js
-moduel.destory()
+moduel.destory();
 ```
 
 #### 7、 表长度
 
 ```js
-moduel.count()
+moduel.count();
 ```
 
 #### 8、 清表
 
 ```js
-moduel.clear()
+moduel.clear();
+```
+
+#### 9、 数据库备份
+
+```js
+database.backup();
+```
+
+#### 10、 数据库恢复
+
+```js
+database.recovery();
 ```

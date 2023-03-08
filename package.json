@@ -1,6 +1,6 @@
 {
     "name": "ts-database",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "这是基于typesciprt的indexedDB的数据库的操作函数",
     "keywords": [
         "typescript",
