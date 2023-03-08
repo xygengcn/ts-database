@@ -30,3 +30,14 @@ export type DBDatabaseEvent = (
   event: DBDatabaseEventType,
   content: { store: IDBObjectStore; module: IDatabaseModules; data?: any }
 ) => void;
+
+
+/**
+ * 数据库模型
+ */
+export interface IDatabase {
+  name: string; // 数据库名
+  version: number; // 版本号
+  modules: Record<string, IDatabaseModules>;
+  data: Record<string, Array<any>>;
+}

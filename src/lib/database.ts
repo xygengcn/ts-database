@@ -3,13 +3,13 @@
  */
 
 import { DBDatabaseModule } from './database-module';
-import { DBDatabaseEvent, IDatabaseModules } from './type';
+import { DBDatabaseEvent, IDatabase, IDatabaseModules } from './type';
 
 export interface IDatabaseOptions {
     name: string;
     version: number;
     modules: IDatabaseModules[];
-    event?: DBDatabaseEvent;
+    event?: DBDatabaseEvent; // 事件回调
 }
 
 export class Database {
@@ -122,5 +122,163 @@ export class Database {
      */
     public drop(): IDBOpenDBRequest {
         return indexedDB.deleteDatabase(this.databaseName);
+    }
+
+
+    /**
+     * 备份
+     */
+    public async backup(): Promise<IDatabase> {
+        return this.connectDatabase().then(() => {
+            return this.exportData().then(data => {
+                return {
+                    name: this.databaseName,
+                    version: this.databaseVersion,
+                    modules: this.databaseModules,
+                    data
+                }
+
+            })
+
+        })
+    }
+
+    /**
+     * 恢复
+     */
+    public recovery(data: IDatabase) {
+        if (data.name !== this.databaseName) {
+            return Promise.reject("database name is error")
+        }
+        if (data.version > this.databaseVersion) {
+            this.databaseVersion = data.version
+        }
+        this.databaseModules = data.modules;
+        return this.connectDatabase().then(() => {
+            return this.importFromJson(data.data)
+
+        })
+    }
+
+
+
+    /**
+      * Export all data from an IndexedDB database
+      * @param {IDBDatabase} idbDatabase - to export from
+      */
+    private exportData(): Promise<Record<string, Array<any>>> {
+        return new Promise((resolve, reject) => {
+            const exportObject = {};
+            const objectStoreNames: string[] = Array.from(new Set(this.database.objectStoreNames as any))
+            if (objectStoreNames.length === 0) {
+                resolve(exportObject);
+            } else {
+                const transaction = this.database.transaction(
+                    objectStoreNames,
+                    'readonly'
+                );
+                transaction.onerror = (e) => {
+                    reject(e);
+                };
+                objectStoreNames.forEach((storeName) => {
+                    const allObjects = [];
+                    const cursor = transaction.objectStore(storeName).openCursor();
+                    cursor.onsuccess = () => {
+                        const result = cursor.result;
+                        if (result) {
+                            allObjects.push(result.value);
+                            result.continue();
+                        } else {
+                            exportObject[storeName] = allObjects;
+                            if (
+                                objectStoreNames.length ===
+                                Object.keys(exportObject).length
+                            ) {
+                                resolve(exportObject);
+                            }
+                        }
+                    };
+                });
+            }
+        })
+
+    }
+
+    /**
+ * Import data from JSON into an IndexedDB database. This does not delete any existing data
+ *  from the database, so keys could clash.
+ *
+ * Only object stores that already exist will be imported.
+ *
+ * @param {IDBDatabase} idbDatabase - to import into
+ * @param {string} jsonString - data to import, one key per object store
+ * @param {function(Object)} cb - callback with signature (error), where error is null on success
+ * @return {void}
+ */
+    private async importFromJson(importObject: Record<string, Array<any>>) {
+        return new Promise((resolve, reject) => {
+            const objectStoreNamesSet = new Set(this.database.objectStoreNames as any);
+            const size = objectStoreNamesSet.size;
+            if (size === 0) {
+                resolve(true);
+            } else {
+                const objectStoreNames = Array.from(objectStoreNamesSet) as string[];
+                const transaction = this.database.transaction(
+                    objectStoreNames,
+                    'readwrite'
+                );
+
+                // 错误处理
+                transaction.onerror = (e) => {
+                    reject(e);
+                };
+
+
+                // Delete keys present in JSON that are not present in database
+                Object.keys(importObject).forEach((storeName) => {
+                    if (!objectStoreNames.includes(storeName)) {
+                        delete importObject[storeName];
+                    }
+                });
+
+                if (Object.keys(importObject).length === 0) {
+                    // no object stores exist to import for
+                    resolve(true);
+                }
+
+                // 循环
+                objectStoreNames.forEach((storeName) => {
+                    let count = 0;
+                    const aux = Array.from(importObject[storeName] || []);
+                    if (importObject[storeName] && aux.length > 0) {
+                        aux.forEach((toAdd) => {
+                            const request = transaction.objectStore(storeName).put(toAdd);
+                            request.onsuccess = () => {
+                                count++;
+                                if (count === importObject[storeName].length) {
+                                    // added all objects for this store
+                                    delete importObject[storeName];
+                                    if (Object.keys(importObject).length === 0) {
+                                        // added all object stores
+                                        resolve(true);
+                                    }
+                                }
+                            };
+                            request.onerror = (event) => {
+                                reject(event);
+                            };
+                        });
+                    } else {
+                        if (importObject[storeName]) {
+                            delete importObject[storeName];
+                            if (Object.keys(importObject).length === 0) {
+                                // added all object stores
+                                resolve(true);
+                            }
+                        }
+                    }
+                });
+            }
+        })
     }
 }
